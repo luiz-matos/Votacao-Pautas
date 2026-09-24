@@ -9,11 +9,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -118,10 +121,50 @@ class PautaServiceTest {
 
     @Test
     void testSalvar() {
-        when(pautaRepository.save(pauta)).thenReturn(pauta);
+        when(pautaRepository.save(any(Pauta.class))).thenReturn(pauta);
         PautaRequestDTO pautaTest = pautaService.salvar(pautaRequestDTO);
         assertEquals(pautaRequestDTO.getId(), pautaTest.getId());
         assertEquals(pautaRequestDTO.getTitulo(), pautaTest.getTitulo());
         assertEquals(pautaRequestDTO.getDescricao(), pautaTest.getDescricao());
+    }
+
+    @Test
+    void testSalvarIgnoraCamposControladosPelaApi() {
+        pautaRequestDTO.setCancelado(true);
+        pautaRequestDTO.setMotivoCancelamento("Motivo");
+        pautaRequestDTO.setTempoLimiteEmAberto(LocalDateTime.now().plusYears(1));
+        pautaRequestDTO.setMinutosEmAberto(5L);
+        when(pautaRepository.save(any(Pauta.class))).thenReturn(pauta);
+
+        pautaService.salvar(pautaRequestDTO);
+
+        ArgumentCaptor<Pauta> salva = ArgumentCaptor.forClass(Pauta.class);
+        verify(pautaRepository).save(salva.capture());
+        assertNull(salva.getValue().getId());
+        assertFalse(salva.getValue().isCancelado());
+        assertNull(salva.getValue().getMotivoCancelamento());
+        assertNull(salva.getValue().getTempoLimiteEmAberto());
+        assertEquals(5L, salva.getValue().getMinutosEmAberto());
+    }
+
+    @Test
+    void testSalvarTituloEmBranco() {
+        pautaRequestDTO.setTitulo("   ");
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> pautaService.salvar(pautaRequestDTO));
+        assertEquals("Pauta deve conter um título e descrição", exception.getMessage());
+    }
+
+    @Test
+    void testSalvarTituloLongo() {
+        pautaRequestDTO.setTitulo("x".repeat(256));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> pautaService.salvar(pautaRequestDTO));
+        assertEquals("Título deve ter no máximo 255 caracteres.", exception.getMessage());
+    }
+
+    @Test
+    void testSalvarMinutosInvalidos() {
+        pautaRequestDTO.setMinutosEmAberto(0L);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> pautaService.salvar(pautaRequestDTO));
+        assertEquals("Minutos em aberto deve ser maior que zero.", exception.getMessage());
     }
 }

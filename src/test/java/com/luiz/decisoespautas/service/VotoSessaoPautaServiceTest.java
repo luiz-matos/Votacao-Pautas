@@ -6,6 +6,7 @@ import com.luiz.decisoespautas.dtos.v1.mappers.VotoSessaoPautaMapper;
 import com.luiz.decisoespautas.entities.VotoSessaoPauta;
 import com.luiz.decisoespautas.repositories.VotoSessaoPautaRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -65,6 +66,7 @@ class VotoSessaoPautaServiceTest {
 
     @Test
     void testEncontraPorId() {
+        when(pautaService.encontraPorId(pauta.getId())).thenReturn(pauta);
         when(votoSessaoPautaRepository.findById(votoSessaoPauta.getId())).thenReturn(Optional.of(VotoSessaoPautaMapper.parseVotoSessaoPauta(votoSessaoPauta)));
         VotoSessaoPautaRequestDTO votoSessaoPautaTest = votoSessaoPautaService.encontraPorId(votoSessaoPauta.getId());
 
@@ -122,6 +124,44 @@ class VotoSessaoPautaServiceTest {
         String erro = exception.getMessage();
 
         assertEquals(erroEsperado, erro);
+    }
+
+    @Test
+    void testSalvarCpfComLetras() {
+        votoSessaoPauta.setCpf("ABCDEFGHI45");
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> votoSessaoPautaService.save(votoSessaoPauta));
+        assertEquals("CPF inválido.", exception.getMessage());
+    }
+
+    @Test
+    void testSalvarSemCpf() {
+        votoSessaoPauta.setCpf(null);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> votoSessaoPautaService.save(votoSessaoPauta));
+        assertEquals("CPF inválido.", exception.getMessage());
+    }
+
+    @Test
+    void testSalvarSemPauta() {
+        votoSessaoPauta.setPauta(null);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> votoSessaoPautaService.save(votoSessaoPauta));
+        assertEquals("Voto deve informar a pauta.", exception.getMessage());
+    }
+
+    @Test
+    void testSalvarSemSimOuNao() {
+        votoSessaoPauta.setVotoPositivo(null);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> votoSessaoPautaService.save(votoSessaoPauta));
+        assertEquals("Voto deve ser sim (true) ou não (false).", exception.getMessage());
+    }
+
+    @Test
+    void testSalvarVotoSimultaneoBarradoPeloBanco() {
+        when(pautaService.encontraPorId(votoSessaoPauta.getPauta().getId())).thenReturn(pauta);
+        when(votoSessaoPautaRepository.existeVotoUsuarioNaSessao(pauta.getId(), votoSessaoPauta.getCpf())).thenReturn(0);
+        when(votoSessaoPautaRepository.save(any(VotoSessaoPauta.class))).thenThrow(new DataIntegrityViolationException("uk_voto_pauta_cpf"));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> votoSessaoPautaService.save(votoSessaoPauta));
+        assertEquals("Usuário já votou nesta pauta.", exception.getMessage());
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.luiz.decisoespautas.service;
 
 import com.luiz.decisoespautas.dtos.v1.PautaRequestDTO;
 import com.luiz.decisoespautas.dtos.v1.mappers.PautaMapper;
+import com.luiz.decisoespautas.entities.Pauta;
 import com.luiz.decisoespautas.repositories.PautaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,8 @@ import java.util.List;
 
 @Service
 public class PautaService {
+
+    private static final int TAMANHO_MAXIMO_TITULO = 255;
 
     @Autowired
     private PautaRepository pautaRepository;
@@ -25,10 +28,22 @@ public class PautaService {
     }
 
     public PautaRequestDTO salvar(PautaRequestDTO pauta) {
-        if (pauta.getTitulo() == null || pauta.getDescricao() == null) {
+        if (pauta.getTitulo() == null || pauta.getTitulo().isBlank() || pauta.getDescricao() == null || pauta.getDescricao().isBlank()) {
             throw new IllegalArgumentException("Pauta deve conter um título e descrição");
         }
-        return PautaMapper.parsePautaRequestDTO(pautaRepository.save(PautaMapper.parsePauta(pauta)));
+        if (pauta.getTitulo().length() > TAMANHO_MAXIMO_TITULO) {
+            throw new IllegalArgumentException("Título deve ter no máximo " + TAMANHO_MAXIMO_TITULO + " caracteres.");
+        }
+        if (pauta.getMinutosEmAberto() != null && pauta.getMinutosEmAberto() <= 0) {
+            throw new IllegalArgumentException("Minutos em aberto deve ser maior que zero.");
+        }
+        // Só título, descrição e minutos vêm do cliente: id, prazo e cancelamento
+        // mudam apenas pelos endpoints de início da votação e de cancelamento.
+        Pauta novaPauta = new Pauta();
+        novaPauta.setTitulo(pauta.getTitulo());
+        novaPauta.setDescricao(pauta.getDescricao());
+        novaPauta.setMinutosEmAberto(pauta.getMinutosEmAberto());
+        return PautaMapper.parsePautaRequestDTO(pautaRepository.save(novaPauta));
     }
 
     public void ativarVotacao(Long id) {

@@ -9,6 +9,10 @@ public final class ValidaCpf {
     }
 
     public static boolean isCPF(String cpf) {
+        // só dígitos: letras passariam pelo cálculo abaixo, que subtrai 48 de qualquer caractere
+        if (cpf == null || !cpf.matches("\\d{11}")) {
+            return false;
+        }
         // considera-se erro CPF"s formados por uma sequencia de numeros iguais
         if (cpf.equals("00000000000") ||
             cpf.equals("11111111111") ||
