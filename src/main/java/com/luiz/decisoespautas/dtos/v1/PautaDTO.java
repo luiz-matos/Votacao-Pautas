@@ -7,14 +7,14 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class PautaRequestDTO {
+public class PautaDTO {
 
     private Long id;
     private String titulo;
     private String descricao;
     private LocalDateTime tempoLimiteEmAberto;
     private Long minutosEmAberto;
-    private boolean isCancelado = false;
+    private boolean cancelado;
     private String motivoCancelamento;
     private Long votosSim;
     private Long votosNao;

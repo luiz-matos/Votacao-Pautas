@@ -1,14 +1,12 @@
 package com.luiz.decisoespautas.dtos.v1.mappers;
 
-import com.luiz.decisoespautas.dtos.v1.PautaRequestDTO;
+import com.luiz.decisoespautas.dtos.v1.PautaDTO;
 import com.luiz.decisoespautas.entities.Pauta;
 import com.luiz.decisoespautas.enums.ResultadoVotacao;
 import com.luiz.decisoespautas.enums.StatusPauta;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -18,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
 class PautaMapperTest {
 
@@ -36,14 +33,13 @@ class PautaMapperTest {
         pauta.setMotivoCancelamento("Motivo Parse");
         pauta.setVotosSim(11L);
         pauta.setVotosNao(12L);
-        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void parseListPautaRequestDTO() {
+    void parseListaPautaDTO() {
         List<Pauta> listaEnvio = List.of(pauta);
-        List<PautaRequestDTO> listaRetorno = PautaMapper.parseListPautaRequestDTO(listaEnvio);
-        PautaRequestDTO retorno = listaRetorno.getFirst();
+        List<PautaDTO> listaRetorno = PautaMapper.parseListaPautaDTO(listaEnvio);
+        PautaDTO retorno = listaRetorno.getFirst();
 
         assertFalse(listaRetorno.isEmpty());
 
@@ -60,8 +56,8 @@ class PautaMapperTest {
     }
 
     @Test
-    void parsePautaRequestDTO() {
-        PautaRequestDTO retorno = PautaMapper.parsePautaRequestDTO(pauta);
+    void parsePautaDTO() {
+        PautaDTO retorno = PautaMapper.parsePautaDTO(pauta);
 
         assertEquals(pauta.getId(), retorno.getId());
         assertEquals(pauta.getTitulo(), retorno.getTitulo());
@@ -77,7 +73,7 @@ class PautaMapperTest {
     @Test
     void statusEResultadoDaPautaEncerrada() {
         pauta.setTempoLimiteEmAberto(LocalDateTime.now().minusMinutes(1));
-        PautaRequestDTO retorno = PautaMapper.parsePautaRequestDTO(pauta);
+        PautaDTO retorno = PautaMapper.parsePautaDTO(pauta);
 
         assertEquals(StatusPauta.ENCERRADA, retorno.getStatus());
         assertEquals(ResultadoVotacao.REPROVADA, retorno.getResultado());
@@ -86,7 +82,7 @@ class PautaMapperTest {
     @Test
     void semResultadoEnquantoEmVotacao() {
         pauta.setTempoLimiteEmAberto(LocalDateTime.now().plusMinutes(1));
-        PautaRequestDTO retorno = PautaMapper.parsePautaRequestDTO(pauta);
+        PautaDTO retorno = PautaMapper.parsePautaDTO(pauta);
 
         assertEquals(StatusPauta.EM_VOTACAO, retorno.getStatus());
         assertNull(retorno.getResultado());
@@ -95,10 +91,10 @@ class PautaMapperTest {
     @Test
     void statusDaPautaCanceladaENaoIniciada() {
         pauta.setTempoLimiteEmAberto(null);
-        assertEquals(StatusPauta.NAO_INICIADA, PautaMapper.parsePautaRequestDTO(pauta).getStatus());
+        assertEquals(StatusPauta.NAO_INICIADA, PautaMapper.parsePautaDTO(pauta).getStatus());
 
         pauta.setCancelado(true);
-        assertEquals(StatusPauta.CANCELADA, PautaMapper.parsePautaRequestDTO(pauta).getStatus());
+        assertEquals(StatusPauta.CANCELADA, PautaMapper.parsePautaDTO(pauta).getStatus());
     }
 
     @Test
@@ -111,7 +107,7 @@ class PautaMapperTest {
     @Test
     void parsePauta() {
 
-        PautaRequestDTO pautaRequestDTO = new PautaRequestDTO();
+        PautaDTO pautaRequestDTO = new PautaDTO();
 
         pautaRequestDTO.setId(10L);
         pautaRequestDTO.setTitulo("Titulo Parse");

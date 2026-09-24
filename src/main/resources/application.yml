@@ -1,7 +1,6 @@
 spring:
     datasource:
-        driver-class-name: org.postgresql.Driver
-        url: ${DB_URL:jdbc:postgresql://localhost:5432/pautas?useTimezone=true&serverTimezone=UTC}
+        url: ${DB_URL:jdbc:postgresql://localhost:5432/pautas}
         username: ${DB_USERNAME:postgres}
         password: ${DB_PASSWORD:postgres}
     flyway:
@@ -11,8 +10,4 @@ spring:
     jpa:
         hibernate:
             ddl-auto: validate
-        properties:
-            hibernate:
-                dialect: org.hibernate.dialect.PostgreSQLDialect
-                show_sql: false
         open-in-view: false

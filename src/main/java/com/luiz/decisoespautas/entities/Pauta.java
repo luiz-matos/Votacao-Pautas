@@ -1,14 +1,23 @@
 package com.luiz.decisoespautas.entities;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
-import lombok.Data;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table
 public class Pauta {
@@ -17,10 +26,9 @@ public class Pauta {
     private Long id;
 
     @Column(nullable = false)
-    @Size(max = 255)
     private String titulo;
 
-    @Column(nullable = false ,columnDefinition = "text")
+    @Column(nullable = false, columnDefinition = "text")
     private String descricao;
 
     @Column
@@ -29,37 +37,16 @@ public class Pauta {
     @Column
     private Long minutosEmAberto;
 
-    @Column(nullable = false)
-    private boolean isCancelado = false;
+    @Column(name = "is_cancelado", nullable = false)
+    private boolean cancelado;
 
     @Column(columnDefinition = "text")
     private String motivoCancelamento;
 
+    // Contagens calculadas pelas consultas do PautaRepository, não são colunas
     @Transient
     private Long votosSim;
 
     @Transient
     private Long votosNao;
-
-    public Pauta(
-        Long id,
-        String titulo,
-        String descricao,
-        LocalDateTime tempoLimiteEmAberto,
-        Long minutosEmAberto,
-        boolean isCancelado,
-        String motivoCancelamento,
-        Long votosSim,
-        Long votosNao
-    ) {
-        this.id = id;
-        this.titulo = titulo;
-        this.descricao = descricao;
-        this.tempoLimiteEmAberto = tempoLimiteEmAberto;
-        this.minutosEmAberto = minutosEmAberto;
-        this.votosSim = votosSim;
-        this.votosNao = votosNao;
-        this.isCancelado = isCancelado;
-        this.motivoCancelamento = motivoCancelamento;
-    }
 }

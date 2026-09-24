@@ -1,20 +1,17 @@
 package com.luiz.decisoespautas.dtos.v1.mappers;
 
-import com.luiz.decisoespautas.dtos.v1.PautaRequestDTO;
-import com.luiz.decisoespautas.dtos.v1.VotoSessaoPautaRequestDTO;
+import com.luiz.decisoespautas.dtos.v1.PautaDTO;
+import com.luiz.decisoespautas.dtos.v1.VotoSessaoPautaDTO;
 import com.luiz.decisoespautas.entities.Pauta;
 import com.luiz.decisoespautas.entities.VotoSessaoPauta;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
 class VotoSessaoPautaMapperTest {
 
@@ -22,15 +19,14 @@ class VotoSessaoPautaMapperTest {
     private Pauta pauta;
 
     @Mock
-    private PautaRequestDTO pautaRequestDTO;
+    private PautaDTO pautaRequestDTO;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void parseVotoSessaoPautaRequestDTO() {
+    void parseVotoSessaoPautaDTO() {
 
         VotoSessaoPauta votoSessaoPauta = new VotoSessaoPauta();
 
@@ -39,7 +35,7 @@ class VotoSessaoPautaMapperTest {
         votoSessaoPauta.setCpf("01234567890");
         votoSessaoPauta.setPauta(pauta);
 
-        VotoSessaoPautaRequestDTO retorno = VotoSessaoPautaMapper.parseVotoSessaoPautaRequestDTO(votoSessaoPauta);
+        VotoSessaoPautaDTO retorno = VotoSessaoPautaMapper.parseVotoSessaoPautaDTO(votoSessaoPauta);
 
         assertEquals(votoSessaoPauta.getId(), retorno.getId());
         assertEquals(votoSessaoPauta.getVotoPositivo(), retorno.getVotoPositivo());
@@ -49,18 +45,18 @@ class VotoSessaoPautaMapperTest {
     @Test
     void parseVotoSessaoPauta() {
 
-        VotoSessaoPautaRequestDTO votoSessaoPautaRequestDTO = new VotoSessaoPautaRequestDTO();
+        VotoSessaoPautaDTO votoSessaoPautaDTO = new VotoSessaoPautaDTO();
 
-        votoSessaoPautaRequestDTO.setId(20L);
-        votoSessaoPautaRequestDTO.setVotoPositivo(true);
-        votoSessaoPautaRequestDTO.setCpf("01234567890");
-        votoSessaoPautaRequestDTO.setPauta(pautaRequestDTO);
+        votoSessaoPautaDTO.setId(20L);
+        votoSessaoPautaDTO.setVotoPositivo(true);
+        votoSessaoPautaDTO.setCpf("01234567890");
+        votoSessaoPautaDTO.setPauta(pautaRequestDTO);
 
-        VotoSessaoPauta retorno = VotoSessaoPautaMapper.parseVotoSessaoPauta(votoSessaoPautaRequestDTO);
+        VotoSessaoPauta retorno = VotoSessaoPautaMapper.parseVotoSessaoPauta(votoSessaoPautaDTO);
 
-        assertEquals(votoSessaoPautaRequestDTO.getId(), retorno.getId());
-        assertEquals(votoSessaoPautaRequestDTO.getVotoPositivo(), retorno.getVotoPositivo());
-        assertEquals(votoSessaoPautaRequestDTO.getCpf(), retorno.getCpf());
+        assertEquals(votoSessaoPautaDTO.getId(), retorno.getId());
+        assertEquals(votoSessaoPautaDTO.getVotoPositivo(), retorno.getVotoPositivo());
+        assertEquals(votoSessaoPautaDTO.getCpf(), retorno.getCpf());
 
     }
 }

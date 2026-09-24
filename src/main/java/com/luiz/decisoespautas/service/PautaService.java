@@ -1,34 +1,68 @@
 package com.luiz.decisoespautas.service;
 
-import com.luiz.decisoespautas.dtos.v1.PautaRequestDTO;
+import com.luiz.decisoespautas.dtos.v1.PautaDTO;
 import com.luiz.decisoespautas.dtos.v1.mappers.PautaMapper;
 import com.luiz.decisoespautas.entities.Pauta;
 import com.luiz.decisoespautas.repositories.PautaRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PautaService {
 
     private static final int TAMANHO_MAXIMO_TITULO = 255;
+    private static final long MINUTOS_EM_ABERTO_PADRAO = 1;
 
-    @Autowired
-    private PautaRepository pautaRepository;
+    private final PautaRepository pautaRepository;
 
-    public List<PautaRequestDTO> listar() {
-        return PautaMapper.parseListPautaRequestDTO(pautaRepository.listarPautasComVotos());
+    public List<PautaDTO> listar() {
+        return PautaMapper.parseListaPautaDTO(pautaRepository.listarComVotos());
     }
 
-    public PautaRequestDTO encontraPorId(Long id) {
-        return PautaMapper.parsePautaRequestDTO(pautaRepository.encontrarPautasPorIdComVotos(id).orElseThrow(() -> new EntityNotFoundException("Pauta não encontrada.")));
+    public PautaDTO buscarPorId(Long id) {
+        return PautaMapper.parsePautaDTO(buscarEntidade(id));
     }
 
-    public PautaRequestDTO salvar(PautaRequestDTO pauta) {
-        if (pauta.getTitulo() == null || pauta.getTitulo().isBlank() || pauta.getDescricao() == null || pauta.getDescricao().isBlank()) {
+    public PautaDTO salvar(PautaDTO pauta) {
+        validaCriacao(pauta);
+        // Só título, descrição e minutos vêm do cliente: id, prazo e cancelamento
+        // mudam apenas pelos endpoints de início da votação e de cancelamento.
+        Pauta novaPauta = new Pauta();
+        novaPauta.setTitulo(pauta.getTitulo());
+        novaPauta.setDescricao(pauta.getDescricao());
+        novaPauta.setMinutosEmAberto(pauta.getMinutosEmAberto());
+        return PautaMapper.parsePautaDTO(pautaRepository.save(novaPauta));
+    }
+
+    public void iniciarVotacao(Long id) {
+        Pauta pauta = buscarEntidade(id);
+        validaInicioVotacao(pauta);
+        long minutos = pauta.getMinutosEmAberto() == null ? MINUTOS_EM_ABERTO_PADRAO : pauta.getMinutosEmAberto();
+        pauta.setTempoLimiteEmAberto(LocalDateTime.now().plusMinutes(minutos));
+        pautaRepository.save(pauta);
+    }
+
+    public void cancelar(Long id, String motivo) {
+        Pauta pauta = buscarEntidade(id);
+        if (pauta.isCancelado()) {
+            throw new IllegalArgumentException("Pauta já cancelada.");
+        }
+        pauta.setCancelado(true);
+        pauta.setMotivoCancelamento(motivo);
+        pautaRepository.save(pauta);
+    }
+
+    private Pauta buscarEntidade(Long id) {
+        return pautaRepository.buscarPorIdComVotos(id).orElseThrow(() -> new EntityNotFoundException("Pauta não encontrada."));
+    }
+
+    private static void validaCriacao(PautaDTO pauta) {
+        if (estaVazio(pauta.getTitulo()) || estaVazio(pauta.getDescricao())) {
             throw new IllegalArgumentException("Pauta deve conter um título e descrição");
         }
         if (pauta.getTitulo().length() > TAMANHO_MAXIMO_TITULO) {
@@ -37,43 +71,22 @@ public class PautaService {
         if (pauta.getMinutosEmAberto() != null && pauta.getMinutosEmAberto() <= 0) {
             throw new IllegalArgumentException("Minutos em aberto deve ser maior que zero.");
         }
-        // Só título, descrição e minutos vêm do cliente: id, prazo e cancelamento
-        // mudam apenas pelos endpoints de início da votação e de cancelamento.
-        Pauta novaPauta = new Pauta();
-        novaPauta.setTitulo(pauta.getTitulo());
-        novaPauta.setDescricao(pauta.getDescricao());
-        novaPauta.setMinutosEmAberto(pauta.getMinutosEmAberto());
-        return PautaMapper.parsePautaRequestDTO(pautaRepository.save(novaPauta));
     }
 
-    public void ativarVotacao(Long id) {
-        PautaRequestDTO pauta = encontraPorId(id);
-        validacaoPauta(pauta);
-        pauta.setTempoLimiteEmAberto(LocalDateTime.now().plusMinutes(pauta.getMinutosEmAberto() == null ? 1 : pauta.getMinutosEmAberto()));
-        pautaRepository.save(PautaMapper.parsePauta(pauta));
-    }
-
-    public void cancelarPauta(Long id, String motivo) {
-        PautaRequestDTO pauta = encontraPorId(id);
-        if (pauta.isCancelado()) {
-            throw new IllegalArgumentException("Pauta já cancelada.");
-        }
-        pauta.setCancelado(true);
-        pauta.setMotivoCancelamento(motivo);
-        pautaRepository.save(PautaMapper.parsePauta(pauta));
-    }
-
-    private static void validacaoPauta(PautaRequestDTO pauta) {
+    private static void validaInicioVotacao(Pauta pauta) {
         if (pauta.isCancelado()) {
             throw new IllegalArgumentException("Pauta cancelada.");
         }
-        if (pauta.getTempoLimiteEmAberto() != null) {
-            if (pauta.getTempoLimiteEmAberto().isAfter(LocalDateTime.now())) {
-                throw new IllegalArgumentException("Pauta está em votação.");
-            } else {
-                throw new IllegalArgumentException("Pauta encerrada.");
-            }
+        if (pauta.getTempoLimiteEmAberto() == null) {
+            return;
         }
+        if (pauta.getTempoLimiteEmAberto().isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Pauta está em votação.");
+        }
+        throw new IllegalArgumentException("Pauta encerrada.");
     }
 
+    private static boolean estaVazio(String texto) {
+        return texto == null || texto.isBlank();
+    }
 }

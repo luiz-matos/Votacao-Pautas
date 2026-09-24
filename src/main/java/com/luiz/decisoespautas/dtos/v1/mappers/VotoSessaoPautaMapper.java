@@ -1,30 +1,30 @@
 package com.luiz.decisoespautas.dtos.v1.mappers;
 
-import com.luiz.decisoespautas.dtos.v1.VotoSessaoPautaRequestDTO;
+import com.luiz.decisoespautas.dtos.v1.VotoSessaoPautaDTO;
 import com.luiz.decisoespautas.entities.VotoSessaoPauta;
 
 public class VotoSessaoPautaMapper {
 
     private VotoSessaoPautaMapper() {}
 
-    public static VotoSessaoPautaRequestDTO parseVotoSessaoPautaRequestDTO(VotoSessaoPauta votoSessaoPauta) {
-        VotoSessaoPautaRequestDTO votoSessaoPautaRequestDTO = new VotoSessaoPautaRequestDTO();
+    public static VotoSessaoPautaDTO parseVotoSessaoPautaDTO(VotoSessaoPauta votoSessaoPauta) {
+        VotoSessaoPautaDTO votoSessaoPautaDTO = new VotoSessaoPautaDTO();
 
-        votoSessaoPautaRequestDTO.setId(votoSessaoPauta.getId());
-        votoSessaoPautaRequestDTO.setVotoPositivo(votoSessaoPauta.getVotoPositivo());
-        votoSessaoPautaRequestDTO.setCpf(votoSessaoPauta.getCpf());
-        votoSessaoPautaRequestDTO.setPauta(PautaMapper.parsePautaRequestDTO(votoSessaoPauta.getPauta()));
+        votoSessaoPautaDTO.setId(votoSessaoPauta.getId());
+        votoSessaoPautaDTO.setVotoPositivo(votoSessaoPauta.getVotoPositivo());
+        votoSessaoPautaDTO.setCpf(votoSessaoPauta.getCpf());
+        votoSessaoPautaDTO.setPauta(PautaMapper.parsePautaDTO(votoSessaoPauta.getPauta()));
 
-        return votoSessaoPautaRequestDTO;
+        return votoSessaoPautaDTO;
     }
 
-    public static VotoSessaoPauta parseVotoSessaoPauta(VotoSessaoPautaRequestDTO votoSessaoPautaRequestDTO) {
+    public static VotoSessaoPauta parseVotoSessaoPauta(VotoSessaoPautaDTO votoSessaoPautaDTO) {
         VotoSessaoPauta votoSessaoPauta = new VotoSessaoPauta();
 
-        votoSessaoPauta.setId(votoSessaoPautaRequestDTO.getId());
-        votoSessaoPauta.setVotoPositivo(votoSessaoPautaRequestDTO.getVotoPositivo());
-        votoSessaoPauta.setCpf(votoSessaoPautaRequestDTO.getCpf());
-        votoSessaoPauta.setPauta(PautaMapper.parsePauta(votoSessaoPautaRequestDTO.getPauta()));
+        votoSessaoPauta.setId(votoSessaoPautaDTO.getId());
+        votoSessaoPauta.setVotoPositivo(votoSessaoPautaDTO.getVotoPositivo());
+        votoSessaoPauta.setCpf(votoSessaoPautaDTO.getCpf());
+        votoSessaoPauta.setPauta(PautaMapper.parsePauta(votoSessaoPautaDTO.getPauta()));
 
         return votoSessaoPauta;
     }

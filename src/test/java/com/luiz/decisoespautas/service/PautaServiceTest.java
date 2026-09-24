@@ -1,18 +1,16 @@
 package com.luiz.decisoespautas.service;
 
-import com.luiz.decisoespautas.dtos.v1.PautaRequestDTO;
+import com.luiz.decisoespautas.dtos.v1.PautaDTO;
 import com.luiz.decisoespautas.dtos.v1.mappers.PautaMapper;
 import com.luiz.decisoespautas.entities.Pauta;
 import com.luiz.decisoespautas.repositories.PautaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -25,11 +23,10 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
 class PautaServiceTest {
 
-    PautaRequestDTO pautaRequestDTO;
+    PautaDTO pautaRequestDTO;
     Pauta pauta;
     Pauta pautaCancelada;
 
@@ -40,14 +37,14 @@ class PautaServiceTest {
 
     @BeforeEach
     void setUp() {
-        pautaRequestDTO = new PautaRequestDTO();
+        pautaRequestDTO = new PautaDTO();
         pautaRequestDTO.setId(1L);
         pautaRequestDTO.setTitulo("Titulo");
         pautaRequestDTO.setDescricao("Descrição");
 
         pauta = PautaMapper.parsePauta(pautaRequestDTO);
 
-        PautaRequestDTO pautaCanceladaDTO = new PautaRequestDTO();
+        PautaDTO pautaCanceladaDTO = new PautaDTO();
         pautaCanceladaDTO.setId(2L);
         pautaCanceladaDTO.setTitulo("Titulo Cancelada");
         pautaCanceladaDTO.setDescricao("Descrição Cancelada");
@@ -55,13 +52,12 @@ class PautaServiceTest {
 
         pautaCancelada = PautaMapper.parsePauta(pautaCanceladaDTO);
 
-        MockitoAnnotations.openMocks(this);
     }
 
     @Test
     void testListar() {
-        when(pautaRepository.listarPautasComVotos()).thenReturn(List.of(pauta));
-        PautaRequestDTO pautaTest = pautaService.listar().getFirst();
+        when(pautaRepository.listarComVotos()).thenReturn(List.of(pauta));
+        PautaDTO pautaTest = pautaService.listar().getFirst();
         assertEquals(pautaRequestDTO.getId(), pautaTest.getId());
         assertEquals(pautaRequestDTO.getTitulo(), pautaTest.getTitulo());
         assertEquals(pautaRequestDTO.getDescricao(), pautaTest.getDescricao());
@@ -69,8 +65,8 @@ class PautaServiceTest {
 
     @Test
     void testEncontraPorId() {
-        when(pautaRepository.encontrarPautasPorIdComVotos(pautaRequestDTO.getId())).thenReturn(Optional.of(pauta));
-        PautaRequestDTO pautaTest = pautaService.encontraPorId(pautaRequestDTO.getId());
+        when(pautaRepository.buscarPorIdComVotos(pautaRequestDTO.getId())).thenReturn(Optional.of(pauta));
+        PautaDTO pautaTest = pautaService.buscarPorId(pautaRequestDTO.getId());
         assertEquals(pautaRequestDTO.getId(), pautaTest.getId());
         assertEquals(pautaRequestDTO.getTitulo(), pautaTest.getTitulo());
         assertEquals(pautaRequestDTO.getDescricao(), pautaTest.getDescricao());
@@ -78,9 +74,9 @@ class PautaServiceTest {
 
     @Test
     void testEncontraPorIdNotFound() {
-        when(pautaRepository.encontrarPautasPorIdComVotos(pautaRequestDTO.getId())).thenReturn(Optional.empty());
+        when(pautaRepository.buscarPorIdComVotos(pautaRequestDTO.getId())).thenReturn(Optional.empty());
         Long idPauta = pautaRequestDTO.getId();
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> pautaService.encontraPorId(idPauta));
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> pautaService.buscarPorId(idPauta));
         String erroEsperado = "Pauta não encontrada.";
         String erro = exception.getMessage();
         assertEquals(erroEsperado, erro);
@@ -89,9 +85,9 @@ class PautaServiceTest {
     @Test
     void testPautaCancelada() {
         pautaRequestDTO.setTempoLimiteEmAberto(LocalDateTime.now().minusMinutes(2L));
-        when(pautaRepository.encontrarPautasPorIdComVotos(pautaCancelada.getId())).thenReturn(Optional.of(pautaCancelada));
+        when(pautaRepository.buscarPorIdComVotos(pautaCancelada.getId())).thenReturn(Optional.of(pautaCancelada));
         Long idPauta = pautaCancelada.getId();
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> pautaService.ativarVotacao(idPauta));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> pautaService.iniciarVotacao(idPauta));
         String erroEsperado = "Pauta cancelada.";
         String erro = exception.getMessage();
         assertEquals(erroEsperado, erro);
@@ -100,9 +96,9 @@ class PautaServiceTest {
     @Test
     void testPautaVotacaoEncerrada() {
         pauta.setTempoLimiteEmAberto(LocalDateTime.now().minusMinutes(2L));
-        when(pautaRepository.encontrarPautasPorIdComVotos(pautaRequestDTO.getId())).thenReturn(Optional.of(pauta));
+        when(pautaRepository.buscarPorIdComVotos(pautaRequestDTO.getId())).thenReturn(Optional.of(pauta));
         Long idPauta = pautaRequestDTO.getId();
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> pautaService.ativarVotacao(idPauta));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> pautaService.iniciarVotacao(idPauta));
         String erroEsperado = "Pauta encerrada.";
         String erro = exception.getMessage();
         assertEquals(erroEsperado, erro);
@@ -111,9 +107,9 @@ class PautaServiceTest {
     @Test
     void testPautaEmVotacao() {
         pauta.setTempoLimiteEmAberto(LocalDateTime.now().plusMinutes(30L));
-        when(pautaRepository.encontrarPautasPorIdComVotos(pautaRequestDTO.getId())).thenReturn(Optional.of(pauta));
+        when(pautaRepository.buscarPorIdComVotos(pautaRequestDTO.getId())).thenReturn(Optional.of(pauta));
         Long idPauta = pautaRequestDTO.getId();
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> pautaService.ativarVotacao(idPauta));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> pautaService.iniciarVotacao(idPauta));
         String erroEsperado = "Pauta está em votação.";
         String erro = exception.getMessage();
         assertEquals(erroEsperado, erro);
@@ -122,7 +118,7 @@ class PautaServiceTest {
     @Test
     void testSalvar() {
         when(pautaRepository.save(any(Pauta.class))).thenReturn(pauta);
-        PautaRequestDTO pautaTest = pautaService.salvar(pautaRequestDTO);
+        PautaDTO pautaTest = pautaService.salvar(pautaRequestDTO);
         assertEquals(pautaRequestDTO.getId(), pautaTest.getId());
         assertEquals(pautaRequestDTO.getTitulo(), pautaTest.getTitulo());
         assertEquals(pautaRequestDTO.getDescricao(), pautaTest.getDescricao());
