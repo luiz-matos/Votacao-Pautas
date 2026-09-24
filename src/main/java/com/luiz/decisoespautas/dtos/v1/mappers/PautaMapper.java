@@ -2,6 +2,8 @@ package com.luiz.decisoespautas.dtos.v1.mappers;
 
 import com.luiz.decisoespautas.dtos.v1.PautaRequestDTO;
 import com.luiz.decisoespautas.entities.Pauta;
+import com.luiz.decisoespautas.enums.ResultadoVotacao;
+import com.luiz.decisoespautas.enums.StatusPauta;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +32,10 @@ public class PautaMapper {
         pautaRequestDTO.setMotivoCancelamento(pauta.getMotivoCancelamento());
         pautaRequestDTO.setVotosSim(pauta.getVotosSim());
         pautaRequestDTO.setVotosNao(pauta.getVotosNao());
+        pautaRequestDTO.setStatus(StatusPauta.de(pauta.isCancelado(), pauta.getTempoLimiteEmAberto()));
+        if (pautaRequestDTO.getStatus() == StatusPauta.ENCERRADA && pauta.getVotosSim() != null && pauta.getVotosNao() != null) {
+            pautaRequestDTO.setResultado(ResultadoVotacao.de(pauta.getVotosSim(), pauta.getVotosNao()));
+        }
 
         return pautaRequestDTO;
     }

@@ -1,5 +1,7 @@
 package com.luiz.decisoespautas.dtos.v1;
 
+import com.luiz.decisoespautas.enums.ResultadoVotacao;
+import com.luiz.decisoespautas.enums.StatusPauta;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -16,4 +18,7 @@ public class PautaRequestDTO {
     private String motivoCancelamento;
     private Long votosSim;
     private Long votosNao;
+    private StatusPauta status;
+    // Preenchido só quando a votação está encerrada
+    private ResultadoVotacao resultado;
 }

@@ -2,6 +2,8 @@ package com.luiz.decisoespautas.dtos.v1.mappers;
 
 import com.luiz.decisoespautas.dtos.v1.PautaRequestDTO;
 import com.luiz.decisoespautas.entities.Pauta;
+import com.luiz.decisoespautas.enums.ResultadoVotacao;
+import com.luiz.decisoespautas.enums.StatusPauta;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -14,6 +16,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
@@ -69,6 +72,40 @@ class PautaMapperTest {
         assertEquals(pauta.getMotivoCancelamento(), retorno.getMotivoCancelamento());
         assertEquals(pauta.getVotosSim(), retorno.getVotosSim());
         assertEquals(pauta.getVotosNao(), retorno.getVotosNao());
+    }
+
+    @Test
+    void statusEResultadoDaPautaEncerrada() {
+        pauta.setTempoLimiteEmAberto(LocalDateTime.now().minusMinutes(1));
+        PautaRequestDTO retorno = PautaMapper.parsePautaRequestDTO(pauta);
+
+        assertEquals(StatusPauta.ENCERRADA, retorno.getStatus());
+        assertEquals(ResultadoVotacao.REPROVADA, retorno.getResultado());
+    }
+
+    @Test
+    void semResultadoEnquantoEmVotacao() {
+        pauta.setTempoLimiteEmAberto(LocalDateTime.now().plusMinutes(1));
+        PautaRequestDTO retorno = PautaMapper.parsePautaRequestDTO(pauta);
+
+        assertEquals(StatusPauta.EM_VOTACAO, retorno.getStatus());
+        assertNull(retorno.getResultado());
+    }
+
+    @Test
+    void statusDaPautaCanceladaENaoIniciada() {
+        pauta.setTempoLimiteEmAberto(null);
+        assertEquals(StatusPauta.NAO_INICIADA, PautaMapper.parsePautaRequestDTO(pauta).getStatus());
+
+        pauta.setCancelado(true);
+        assertEquals(StatusPauta.CANCELADA, PautaMapper.parsePautaRequestDTO(pauta).getStatus());
+    }
+
+    @Test
+    void resultadoDaVotacao() {
+        assertEquals(ResultadoVotacao.APROVADA, ResultadoVotacao.de(3, 2));
+        assertEquals(ResultadoVotacao.REPROVADA, ResultadoVotacao.de(2, 3));
+        assertEquals(ResultadoVotacao.EMPATE, ResultadoVotacao.de(0, 0));
     }
 
     @Test
