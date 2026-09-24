@@ -4,12 +4,15 @@ spring:
         url: jdbc:postgresql://localhost:5432/pautas?useTimezone=true&serverTimezone=UTC
         username: postgres
         password: postgres
+    flyway:
+        # Bancos criados antes das migrations já têm as tabelas: a V1 usa "if not exists"
+        baseline-on-migrate: true
+        baseline-version: 0
     jpa:
         hibernate:
-            ddl-auto: update
+            ddl-auto: validate
         properties:
             hibernate:
                 dialect: org.hibernate.dialect.PostgreSQLDialect
                 show_sql: false
-        generate-ddl: true
         open-in-view: false
