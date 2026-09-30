@@ -6,6 +6,7 @@
   <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL 16">
   <img src="https://img.shields.io/badge/Flyway-Migrations-CC0200?style=for-the-badge&logo=flyway&logoColor=white" alt="Flyway Migrations">
   <img src="https://img.shields.io/badge/Swagger-OpenAPI-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger OpenAPI">
+  <img src="https://img.shields.io/badge/Licen%C3%A7a-MIT-yellow?style=for-the-badge" alt="Licença MIT">
 </div>
 
 <br>
@@ -23,6 +24,7 @@ Fiz o projeto em 2024 como desafio técnico. Em 2026 voltei a ele para corrigir 
 - [🎓 O que fiz em 2024](#-o-que-fiz-em-2024)
 - [🔄 Revisitando o projeto em 2026](#-revisitando-o-projeto-em-2026)
 - [🔭 Próximos passos](#-próximos-passos)
+- [📄 Licença](#-licença)
 
 ## 🚀 Como rodar
 
@@ -191,6 +193,10 @@ A senha do banco estava fixa no `application.yml`. Agora URL, usuário e senha v
 - Teste de integração com banco embarcado, para o `mvn test` não depender de um PostgreSQL rodando.
 - Contagem de votos em tempo real.
 - Mensageria (Kafka) para absorver picos de votação.
+
+## 📄 Licença
+
+[MIT](LICENSE)
 
 ---
 
