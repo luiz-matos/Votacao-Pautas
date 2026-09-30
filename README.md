@@ -1,10 +1,30 @@
-# Decisões Pautas
+# 🗳️ Decisões Pautas
 
-API REST em Java 21 e Spring Boot 4 para criar pautas, abrir sessões de votação com tempo limitado e registrar um voto de sim ou não por CPF.
+<div align="center">
+  <img src="https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk" alt="Java 21">
+  <img src="https://img.shields.io/badge/Spring%20Boot-4.1.1-brightgreen?style=for-the-badge&logo=springboot" alt="Spring Boot 4.1.1">
+  <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL 16">
+  <img src="https://img.shields.io/badge/Flyway-Migrations-CC0200?style=for-the-badge&logo=flyway&logoColor=white" alt="Flyway Migrations">
+  <img src="https://img.shields.io/badge/Swagger-OpenAPI-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger OpenAPI">
+</div>
+
+<br>
+
+> 🎯 **API REST em Java 21 e Spring Boot 4 para criar pautas**, abrir sessões de votação com tempo limitado e registrar um voto de sim ou não por CPF.
 
 Fiz o projeto em 2024 como desafio técnico. Em 2026 voltei a ele para corrigir bugs, atualizar as dependências e fazer parte do que tinha ficado na lista de futuro.
 
-## Como rodar
+## 📋 Índice
+
+- [🚀 Como rodar](#-como-rodar)
+- [📚 Endpoints](#-endpoints)
+- [📏 Regras](#-regras)
+- [🧩 Como o código funciona](#-como-o-código-funciona)
+- [🎓 O que fiz em 2024](#-o-que-fiz-em-2024)
+- [🔄 Revisitando o projeto em 2026](#-revisitando-o-projeto-em-2026)
+- [🔭 Próximos passos](#-próximos-passos)
+
+## 🚀 Como rodar
 
 Precisa do JDK 21 e de um PostgreSQL com um banco chamado `pautas`. As tabelas são criadas pelas migrations do Flyway na primeira execução.
 
@@ -34,7 +54,7 @@ A documentação fica no Swagger, em `http://localhost:8080/swagger-ui.html`, e 
 
 Os testes rodam com `./mvnw test`. Os de service e de mapper não precisam de banco. O `DecisoesPautasApplicationTests` sobe a aplicação inteira e precisa do PostgreSQL rodando.
 
-## Endpoints
+## 📚 Endpoints
 
 | Método | Rota | O que faz |
 |---|---|---|
@@ -46,7 +66,7 @@ Os testes rodam com `./mvnw test`. Os de service e de mapper não precisam de ba
 | `POST` | `/voto` | Registra um voto: `cpf`, `votoPositivo` e `pauta.id` |
 | `GET` | `/voto?id={id}` | Busca um voto |
 
-## Regras
+## 📏 Regras
 
 - A pauta nasce `NAO_INICIADA`. Ao iniciar, fica `EM_VOTACAO` pelo tempo de `minutosEmAberto`, ou 1 minuto se não for informado. Depois disso, passa a `ENCERRADA`.
 - Só aceita voto enquanto está `EM_VOTACAO`.
@@ -73,7 +93,7 @@ Exemplo de pauta encerrada:
 }
 ```
 
-## Como o código funciona
+## 🧩 Como o código funciona
 
 ```
 src/main/java/com/luiz/decisoespautas/
@@ -115,17 +135,17 @@ erDiagram
     }
 ```
 
-## O que fiz em 2024
+## 🎓 O que fiz em 2024
 
 Documentei a API com Swagger, testei os fluxos manualmente pelo Postman e usei o SonarLint para manter o código limpo e diminuir a chance de erro. Os services e os mappers têm testes unitários com JUnit e Mockito.
 
 A tarefa bônus 1 do desafio pedia o uso de uma API externa, mas essa API não funciona mais. O CPF é validado localmente, pelo cálculo dos dígitos verificadores.
 
-## Revisitando o projeto em 2026
+## 🔄 Revisitando o projeto em 2026
 
 Uma análise nova encontrou bugs que deixavam o banco ser apagado, votos repetidos passarem e erros de entrada virarem erro 500. Também atualizei o Spring Boot 3.3, que estava sem suporte.
 
-### Bugs corrigidos
+### 🐛 Bugs corrigidos
 
 | Bug | Causa | Correção |
 |---|---|---|
@@ -138,7 +158,7 @@ Uma análise nova encontrou bugs que deixavam o banco ser apagado, votos repetid
 | O CPF `ABCDEFGHI45` passava na validação | O cálculo subtraía 48 de qualquer caractere, não só de dígitos | `ValidaCpf` exige 11 dígitos antes do cálculo |
 | A resposta do voto mostrava a contagem de antes do voto, e `GET /voto` mostrava a contagem vazia | A pauta da resposta vinha de antes do insert, ou da entidade sem as somas | A pauta é recarregada com a contagem atual |
 
-### Decisões técnicas
+### 🧠 Decisões técnicas
 
 **Flyway com baseline na versão 0**
 
@@ -166,8 +186,18 @@ A senha do banco estava fixa no `application.yml`. Agora URL, usuário e senha v
 - **Sem classe interna do JDK.** O handler tratava `com.sun.jdi.request.DuplicateRequestException`, que nunca era lançada e depende de um módulo de depuração do JDK.
 - **Mesmo resultado.** Um roteiro de 40 requisições HTTP rodou antes e depois da limpeza, contra um PostgreSQL de verdade, com respostas idênticas. O `ValidaCpf` reescrito deu o mesmo resultado do antigo em mais de 1 milhão de entradas.
 
-## Próximos passos
+## 🔭 Próximos passos
 
 - Teste de integração com banco embarcado, para o `mvn test` não depender de um PostgreSQL rodando.
 - Contagem de votos em tempo real.
 - Mensageria (Kafka) para absorver picos de votação.
+
+---
+
+<div align="center">
+  <p>Desenvolvido por <strong>Luiz Matos</strong></p>
+  <p>
+    <a href="https://github.com/luiz-matos">GitHub</a> •
+    <a href="https://www.linkedin.com/in/luizeduardomatos/">LinkedIn</a>
+  </p>
+</div>
